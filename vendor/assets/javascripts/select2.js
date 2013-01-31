@@ -2100,6 +2100,12 @@
             choice.insertBefore(this.searchContainer);
 
             val.push(id);
+
+            if(this.selectedVals == null) {
+              this.selectedVals = {};
+            }
+            this.selectedVals[id] = true;
+
             this.setVal(val);
         },
 
@@ -2117,7 +2123,8 @@
 
             data = selected.data("select2-data");
 
-            index = indexOf(this.id(data), val);
+            var id = this.id(data)
+            index = indexOf(id, val);
 
             if (index >= 0) {
                 val.splice(index, 1);
@@ -2125,6 +2132,11 @@
                 if (this.select) this.postprocessResults();
             }
             selected.remove();
+            if(this.selectedVals == null) {
+              this.selectedVals = {};
+            }
+            this.selectedVals[id] = false;
+
             this.triggerChange({ removed: data });
         },
 
@@ -2135,9 +2147,13 @@
                 compound = this.results.find(".select2-result-with-children"),
                 self = this;
 
+            if(this.selectedVals == null) {
+              this.selectedVals = {};
+            }
             choices.each2(function (i, choice) {
                 var id = self.id(choice.data("select2-data"));
-                if (indexOf(id, val) >= 0) {
+
+                if (self.selectedVals[id]) {
                     choice.addClass("select2-disabled").removeClass("select2-result-selectable");
                 } else {
                     choice.removeClass("select2-disabled").addClass("select2-result-selectable");
