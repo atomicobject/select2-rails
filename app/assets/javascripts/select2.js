@@ -806,10 +806,15 @@ the specific language governing permissions and limitations under the Apache Lic
                                 collection.push({id:element.attr("value"), text:element.text(), element: element.get(), css: element.attr("class"), disabled: equal(element.attr("disabled"), "disabled") });
                             }
                         } else if (element.is("optgroup")) {
-                            group={text:element.attr("label"), children:[], element: element.get(), css: element.attr("class")};
-                            element.children().each2(function(i, elm) { process(elm, group.children); });
-                            if (group.children.length>0) {
-                                collection.push(group);
+                          // HERE
+                            if(element.attr("disabled") != 'disabled') {
+                            // if(element.find("option:not(:disabled)").length > 0) {
+                              // if (element.find("option")
+                              group={text:element.attr("label"), children:[], element: element.get(), css: element.attr("class")};
+                              element.children().each2(function(i, elm) { process(elm, group.children); });
+                              if (group.children.length>0) {
+                                  collection.push(group);
+                              }
                             }
                         }
                     };
@@ -1224,7 +1229,6 @@ the specific language governing permissions and limitations under the Apache Lic
 
         // abstract
         findHighlightableChoices: function() {
-            var h=this.results.find(".select2-result-selectable:not(.select2-selected):not(.select2-disabled)");
             return this.results.find(".select2-result-selectable:not(.select2-selected):not(.select2-disabled)");
         },
 
@@ -1863,7 +1867,6 @@ the specific language governing permissions and limitations under the Apache Lic
                 showSearchInput  = min < 0 ? false : countResults(data.results) >= min;
                 this.showSearch(showSearchInput);
             }
-
         },
 
         // single
@@ -2365,6 +2368,12 @@ the specific language governing permissions and limitations under the Apache Lic
             choice.insertBefore(this.searchContainer);
 
             val.push(id);
+
+            if(this.selectedVals == null) {
+              this.selectedVals = {};
+            }
+            this.selectedVals[id] = true;
+
             this.setVal(val);
         },
 
@@ -2381,14 +2390,14 @@ the specific language governing permissions and limitations under the Apache Lic
             }
 
             data = selected.data("select2-data");
-
             if (!data) {
                 // prevent a race condition when the 'x' is clicked really fast repeatedly the event can be queued
                 // and invoked on an element already removed
                 return;
             }
 
-            index = indexOf(this.id(data), val);
+            var id = this.id(data)
+            index = indexOf(id, val);
 
             if (index >= 0) {
                 val.splice(index, 1);
@@ -2397,8 +2406,11 @@ the specific language governing permissions and limitations under the Apache Lic
             }
             selected.remove();
 
-            this.opts.element.trigger({ type: "removed", val: this.id(data), choice: data });
-            this.triggerChange({ removed: data });
+            if(this.selectedVals == null) {
+              this.selectedVals = {};
+            }
+            this.selectedVals[id] = false;
+            this.opts.element.trigger({ type: "removed", val: id, choice: data });
         },
 
         // multi
@@ -2408,9 +2420,13 @@ the specific language governing permissions and limitations under the Apache Lic
                 compound = this.results.find(".select2-result-with-children"),
                 self = this;
 
+            if(this.selectedVals == null) {
+              this.selectedVals = {};
+            }
             choices.each2(function (i, choice) {
                 var id = self.id(choice.data("select2-data"));
-                if (indexOf(id, val) >= 0) {
+
+                if (self.selectedVals[id]) {
                     choice.addClass("select2-selected");
                     // mark all children of the selected parent as selected
                     choice.find(".select2-result-selectable").addClass("select2-selected");
