@@ -2405,7 +2405,6 @@ the specific language governing permissions and limitations under the Apache Lic
                 if (this.select) this.postprocessResults();
             }
             selected.remove();
-
             if(this.selectedVals == null) {
               this.selectedVals = {};
             }
@@ -2427,9 +2426,12 @@ the specific language governing permissions and limitations under the Apache Lic
                 var id = self.id(choice.data("select2-data"));
 
                 if (self.selectedVals[id]) {
+                    choice.addClass("select2-disabled").removeClass("select2-result-selectable");
                     choice.addClass("select2-selected");
                     // mark all children of the selected parent as selected
                     choice.find(".select2-result-selectable").addClass("select2-selected");
+                } else {
+                    choice.removeClass("select2-disabled").addClass("select2-result-selectable");
                 }
             });
 
